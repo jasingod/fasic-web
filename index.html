@@ -8,10 +8,12 @@
   <meta property="og:description" content="Something is coming." />
   <title>FASIC</title>
 
-  <!-- Preconnect to CDN for faster Three.js load -->
+  <!-- Preload Three.js ES module as early as possible -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-  <link rel="preload" as="script" crossorigin
+  <link rel="modulepreload" crossorigin
         href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" />
+  <link rel="modulepreload" crossorigin
+        href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js" />
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -54,7 +56,7 @@
       padding: 36px 48px;
       display: flex; align-items: center; justify-content: space-between;
       z-index: 20; pointer-events: none;
-      opacity: 0; animation: fadeIn 1.2s ease 1.8s forwards;
+      opacity: 0; animation: fadeIn 0.7s ease 0.9s forwards;
     }
     .logo-mark {
       pointer-events: all;
@@ -83,7 +85,7 @@
     }
 
     /* ── Corner accents ─────────────────────────────────────── */
-    .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 1.2s ease 2.5s forwards; }
+    .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 0.7s ease 1.1s forwards; }
     .corner-tl { top: 44px; left: 44px; }
     .corner-br { bottom: 44px; right: 44px; }
     .corner-tl::before,.corner-tl::after,
@@ -108,21 +110,21 @@
       letter-spacing: 0.54em; text-indent: 0.54em;
       color: rgba(255,255,255,0.92);
       user-select: none; opacity: 0;
-      animation: revealBrand 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
+      animation: revealBrand 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.8s forwards;
     }
     .tagline {
       margin-top: 20px; font-weight: 200;
       font-size: clamp(9px, 1.05vw, 11px);
       letter-spacing: 0.48em; text-indent: 0.48em;
       color: rgba(255,255,255,0.16); text-transform: uppercase;
-      opacity: 0; animation: fadeIn 2s ease 1.6s forwards;
+      opacity: 0; animation: fadeIn 0.7s ease 1.1s forwards;
     }
 
     /* ── Footer ─────────────────────────────────────────────── */
     footer {
       position: fixed; bottom: 40px; left: 0; right: 0;
       text-align: center; z-index: 10;
-      opacity: 0; animation: fadeIn 1.5s ease 2.5s forwards;
+      opacity: 0; animation: fadeIn 0.7s ease 1.1s forwards;
     }
     footer a {
       font-weight: 200; font-size: 10px;
@@ -137,8 +139,8 @@
     #loader {
       position: fixed; inset: 0; background: #050505;
       display: flex; align-items: center; justify-content: center;
-      z-index: 500; transition: opacity 1s ease;
-      animation: loaderKill 0.5s linear 9s forwards;
+      z-index: 500;
+      animation: loaderKill 0.5s ease 0.7s forwards;
     }
     #loader.hidden { opacity: 0; pointer-events: none; }
     @keyframes loaderKill { to { opacity: 0; pointer-events: none; } }
@@ -380,11 +382,11 @@
       }
     });
 
-    // Failsafe: force-hide loader if 3D fails to load
+    // Failsafe: force-hide loader (CSS animation handles it at 0.7s, this is backup)
     setTimeout(() => {
       const l = document.getElementById('loader');
       if (l) { l.style.opacity = '0'; l.style.pointerEvents = 'none'; }
-    }, 6000);
+    }, 1500);
   </script>
 
   <script type="importmap">
