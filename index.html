@@ -8,9 +8,10 @@
   <meta property="og:description" content="Something is coming." />
   <title>FASIC</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@100;200;300;400&display=swap" rel="stylesheet" />
+  <!-- Preconnect to CDN for faster Three.js load -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="preload" as="script" crossorigin
+        href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" />
 
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -20,16 +21,15 @@
       overflow: hidden;
       background: #050505;
       cursor: none;
+      /* System fonts — no Google Fonts request needed */
+      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
     /* ── Cursor ─────────────────────────────────────────────── */
     #cursor {
-      position: fixed;
-      width: 5px; height: 5px;
-      background: rgba(255,255,255,0.5);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9999;
+      position: fixed; width: 5px; height: 5px;
+      background: rgba(255,255,255,0.5); border-radius: 50%;
+      pointer-events: none; z-index: 9999;
       transform: translate(-50%, -50%);
       transition: transform 0.1s ease, background 0.3s ease;
     }
@@ -44,7 +44,7 @@
     /* ── Vignette ───────────────────────────────────────────── */
     .vignette {
       position: fixed; inset: 0;
-      background: radial-gradient(ellipse at 50% 58%, transparent 22%, rgba(0,0,0,0.78) 100%);
+      background: radial-gradient(ellipse at 50% 58%, transparent 22%, rgba(0,0,0,0.75) 100%);
       pointer-events: none; z-index: 2;
     }
 
@@ -54,42 +54,28 @@
       padding: 36px 48px;
       display: flex; align-items: center; justify-content: space-between;
       z-index: 20; pointer-events: none;
-      opacity: 0;
-      animation: fadeIn 1.2s ease 2.2s forwards;
+      opacity: 0; animation: fadeIn 1.2s ease 1.8s forwards;
     }
-
     .logo-mark {
       pointer-events: all;
       display: flex; align-items: center; gap: 14px;
-      opacity: 0.7;
-      transition: opacity 0.4s ease;
+      opacity: 0.7; transition: opacity 0.4s ease;
     }
     .logo-mark:hover { opacity: 1; }
-
     .logo-name {
-      font-family: 'Barlow', sans-serif;
-      font-weight: 200;
-      font-size: 11px;
-      letter-spacing: 0.42em;
-      text-indent: 0.42em;
-      color: rgba(255,255,255,0.6);
-      text-transform: uppercase;
+      font-weight: 200; font-size: 11px;
+      letter-spacing: 0.42em; text-indent: 0.42em;
+      color: rgba(255,255,255,0.6); text-transform: uppercase;
     }
-
     .contact-btn {
-      pointer-events: all;
-      background: none;
+      pointer-events: all; background: none;
       border: 1px solid rgba(255,255,255,0.18);
       color: rgba(255,255,255,0.45);
-      font-family: 'Barlow', sans-serif;
-      font-weight: 200;
-      font-size: 9px;
-      letter-spacing: 0.45em;
-      text-indent: 0.45em;
-      padding: 11px 22px;
-      text-transform: uppercase;
-      cursor: none;
-      transition: border-color 0.35s, color 0.35s;
+      font-weight: 200; font-size: 9px;
+      letter-spacing: 0.45em; text-indent: 0.45em;
+      padding: 11px 22px; text-transform: uppercase;
+      cursor: none; transition: border-color 0.35s, color 0.35s;
+      font-family: inherit;
     }
     .contact-btn:hover {
       border-color: rgba(255,255,255,0.48);
@@ -97,11 +83,11 @@
     }
 
     /* ── Corner accents ─────────────────────────────────────── */
-    .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 1.2s ease 2.8s forwards; }
+    .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 1.2s ease 2.5s forwards; }
     .corner-tl { top: 44px; left: 44px; }
     .corner-br { bottom: 44px; right: 44px; }
-    .corner-tl::before, .corner-tl::after,
-    .corner-br::before, .corner-br::after {
+    .corner-tl::before,.corner-tl::after,
+    .corner-br::before,.corner-br::after {
       content: ''; position: absolute; background: rgba(255,255,255,0.13);
     }
     .corner-tl::before { width: 28px; height: 1px; top: 0; left: 0; }
@@ -109,51 +95,41 @@
     .corner-br::before { width: 28px; height: 1px; bottom: 0; right: 0; }
     .corner-br::after  { width: 1px; height: 28px; bottom: -14px; right: 0; }
 
-    /* ── Main brand overlay ─────────────────────────────────── */
+    /* ── Brand overlay ──────────────────────────────────────── */
     .overlay {
       position: fixed; inset: 0;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       z-index: 10; pointer-events: none;
     }
-
     .brand {
-      font-family: 'Barlow', sans-serif;
       font-weight: 100;
       font-size: clamp(64px, 11.5vw, 152px);
-      letter-spacing: 0.54em;
-      text-indent: 0.54em;
+      letter-spacing: 0.54em; text-indent: 0.54em;
       color: rgba(255,255,255,0.92);
-      user-select: none;
-      opacity: 0;
-      animation: revealBrand 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.5s forwards;
+      user-select: none; opacity: 0;
+      animation: revealBrand 2.2s cubic-bezier(0.22, 1, 0.36, 1) 0.4s forwards;
     }
-
     .tagline {
-      margin-top: 20px;
-      font-family: 'Barlow', sans-serif;
-      font-weight: 200;
+      margin-top: 20px; font-weight: 200;
       font-size: clamp(9px, 1.05vw, 11px);
-      letter-spacing: 0.48em;
-      text-indent: 0.48em;
-      color: rgba(255,255,255,0.16);
-      text-transform: uppercase;
-      opacity: 0;
-      animation: fadeIn 2s ease 2s forwards;
+      letter-spacing: 0.48em; text-indent: 0.48em;
+      color: rgba(255,255,255,0.16); text-transform: uppercase;
+      opacity: 0; animation: fadeIn 2s ease 1.6s forwards;
     }
 
     /* ── Footer ─────────────────────────────────────────────── */
     footer {
       position: fixed; bottom: 40px; left: 0; right: 0;
       text-align: center; z-index: 10;
-      opacity: 0; animation: fadeIn 1.5s ease 3s forwards;
+      opacity: 0; animation: fadeIn 1.5s ease 2.5s forwards;
     }
     footer a {
-      font-family: 'Barlow', sans-serif; font-weight: 200;
-      font-size: 10px; letter-spacing: 0.36em; text-indent: 0.36em;
+      font-weight: 200; font-size: 10px;
+      letter-spacing: 0.36em; text-indent: 0.36em;
       color: rgba(255,255,255,0.18); text-decoration: none;
       text-transform: uppercase; cursor: none;
-      transition: color 0.4s ease;
+      transition: color 0.4s ease; font-family: inherit;
     }
     footer a:hover { color: rgba(255,255,255,0.55); }
 
@@ -162,12 +138,10 @@
       position: fixed; inset: 0; background: #050505;
       display: flex; align-items: center; justify-content: center;
       z-index: 500; transition: opacity 1s ease;
-      animation: loaderKill 0s linear 10s forwards;
+      animation: loaderKill 0.5s linear 9s forwards;
     }
     #loader.hidden { opacity: 0; pointer-events: none; }
-    @keyframes loaderKill {
-      to { opacity: 0; pointer-events: none; }
-    }
+    @keyframes loaderKill { to { opacity: 0; pointer-events: none; } }
     .loader-dot {
       width: 3px; height: 3px;
       background: rgba(255,255,255,0.22); border-radius: 50%;
@@ -177,24 +151,17 @@
     /* ── Contact Modal ───────────────────────────────────────── */
     .modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(2, 2, 4, 0.92);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      z-index: 300;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.45s ease;
+      background: rgba(2,2,4,0.92);
+      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+      z-index: 300; display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.45s ease;
     }
-    .modal-overlay.open {
-      opacity: 1; pointer-events: all;
-    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
 
     .modal-box {
-      width: min(540px, 90vw);
-      padding: 58px 54px 52px;
+      width: min(540px, 90vw); padding: 58px 54px 52px;
       border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(6, 6, 8, 0.98);
-      position: relative;
+      background: rgba(6,6,8,0.98); position: relative;
       transform: translateY(22px);
       transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -202,50 +169,36 @@
 
     .modal-close {
       position: absolute; top: 24px; right: 24px;
-      width: 32px; height: 32px;
-      background: none; border: none; cursor: none;
-      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; background: none; border: none;
+      cursor: none; display: flex; align-items: center; justify-content: center;
       opacity: 0.3; transition: opacity 0.3s ease;
     }
     .modal-close:hover { opacity: 0.9; }
-    .modal-close svg { width: 14px; height: 14px; }
 
     .modal-eyebrow {
-      font-family: 'Barlow', sans-serif; font-weight: 300;
-      font-size: 9px; letter-spacing: 0.5em; text-indent: 0.5em;
-      color: rgba(255,255,255,0.28); text-transform: uppercase;
-      margin-bottom: 16px;
+      font-weight: 300; font-size: 9px; letter-spacing: 0.5em; text-indent: 0.5em;
+      color: rgba(255,255,255,0.28); text-transform: uppercase; margin-bottom: 16px;
     }
-
     .modal-title {
-      font-family: 'Barlow', sans-serif; font-weight: 100;
-      font-size: 28px; letter-spacing: 0.18em; text-indent: 0.18em;
-      color: rgba(255,255,255,0.88);
-      margin-bottom: 44px;
+      font-weight: 100; font-size: 28px;
+      letter-spacing: 0.18em; text-indent: 0.18em;
+      color: rgba(255,255,255,0.88); margin-bottom: 44px;
     }
 
     .form-group { margin-bottom: 32px; }
-
     .form-group label {
-      display: block;
-      font-family: 'Barlow', sans-serif; font-weight: 300;
-      font-size: 9px; letter-spacing: 0.42em; text-indent: 0.42em;
-      color: rgba(255,255,255,0.28); text-transform: uppercase;
-      margin-bottom: 12px;
+      display: block; font-weight: 300; font-size: 9px;
+      letter-spacing: 0.42em; text-indent: 0.42em;
+      color: rgba(255,255,255,0.28); text-transform: uppercase; margin-bottom: 12px;
     }
-
     .form-group input,
     .form-group textarea {
-      width: 100%;
-      background: transparent; border: none;
+      width: 100%; background: transparent; border: none;
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.82);
-      font-family: 'Barlow', sans-serif; font-weight: 200;
-      font-size: 14px; letter-spacing: 0.04em;
-      padding: 10px 0; outline: none;
-      transition: border-color 0.3s ease;
-      -webkit-appearance: none; appearance: none;
-      border-radius: 0;
+      color: rgba(255,255,255,0.82); font-family: inherit;
+      font-weight: 200; font-size: 14px; letter-spacing: 0.04em;
+      padding: 10px 0; outline: none; transition: border-color 0.3s ease;
+      -webkit-appearance: none; appearance: none; border-radius: 0;
     }
     .form-group input::placeholder,
     .form-group textarea::placeholder { color: rgba(255,255,255,0.15); }
@@ -256,8 +209,7 @@
     .submit-btn {
       margin-top: 8px; width: 100%; padding: 17px;
       background: rgba(255,255,255,0.88); color: #050505;
-      border: none;
-      font-family: 'Barlow', sans-serif; font-weight: 300;
+      border: none; font-family: inherit; font-weight: 300;
       font-size: 10px; letter-spacing: 0.48em; text-indent: 0.48em;
       text-transform: uppercase; cursor: none;
       transition: background 0.3s ease, transform 0.2s ease;
@@ -266,13 +218,10 @@
     .submit-btn:disabled { opacity: 0.4; }
 
     .privacy-note {
-      margin-top: 20px;
-      font-family: 'Barlow', sans-serif; font-weight: 200;
-      font-size: 10px; letter-spacing: 0.06em;
-      color: rgba(255,255,255,0.18); text-align: center;
-      line-height: 1.7;
+      margin-top: 20px; font-weight: 200; font-size: 10px;
+      letter-spacing: 0.06em; color: rgba(255,255,255,0.18);
+      text-align: center; line-height: 1.7;
     }
-
     .form-success {
       display: none; text-align: center; padding: 20px 0;
     }
@@ -282,9 +231,8 @@
       display: flex; align-items: center; justify-content: center;
     }
     .form-success p {
-      font-family: 'Barlow', sans-serif; font-weight: 200;
-      font-size: 13px; letter-spacing: 0.08em;
-      color: rgba(255,255,255,0.55); line-height: 1.9;
+      font-weight: 200; font-size: 13px;
+      letter-spacing: 0.08em; color: rgba(255,255,255,0.55); line-height: 1.9;
     }
 
     /* ── Keyframes ───────────────────────────────────────────── */
@@ -292,40 +240,27 @@
       from { opacity: 0; transform: translateY(18px); filter: blur(14px); }
       to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
     }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pulse {
-      0%, 100% { opacity: 0.15; transform: scale(0.8); }
-      50%       { opacity: 0.7;  transform: scale(1.3); }
+      0%,100% { opacity: 0.15; transform: scale(0.8); }
+      50%      { opacity: 0.7;  transform: scale(1.3); }
     }
   </style>
 </head>
 <body>
 
-  <!-- Loader -->
   <div id="loader"><div class="loader-dot"></div></div>
-
-  <!-- Cursor -->
   <div id="cursor"></div>
-
-  <!-- 3D Canvas -->
   <canvas id="webgl"></canvas>
-
-  <!-- Vignette -->
   <div class="vignette"></div>
-
-  <!-- Corner accents -->
   <div class="corner corner-tl"></div>
   <div class="corner corner-br"></div>
 
-  <!-- Header: logo + contact button -->
   <header>
     <div class="logo-mark">
-      <!-- FASIC brand mark — rounded pill with dot (matches logo) -->
-      <svg width="26" height="38" viewBox="0 0 36 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="3" y="3" width="30" height="46" rx="15" stroke="rgba(255,255,255,0.82)" stroke-width="4.5" fill="none"/>
+      <svg width="26" height="38" viewBox="0 0 36 52" fill="none">
+        <rect x="3" y="3" width="30" height="46" rx="15"
+              stroke="rgba(255,255,255,0.82)" stroke-width="4.5" fill="none"/>
         <circle cx="18" cy="17" r="4.5" fill="rgba(255,255,255,0.82)"/>
       </svg>
       <span class="logo-name">FASIC</span>
@@ -333,13 +268,11 @@
     <button class="contact-btn" id="open-modal">Contact</button>
   </header>
 
-  <!-- Brand center overlay -->
   <div class="overlay">
     <div class="brand">FASIC</div>
     <div class="tagline">Gaming Peripherals &nbsp;&mdash;&nbsp; Coming Soon</div>
   </div>
 
-  <!-- Footer email -->
   <footer>
     <a href="mailto:master@fasic.pro">master@fasic.pro</a>
   </footer>
@@ -347,62 +280,58 @@
   <!-- Contact Modal -->
   <div class="modal-overlay" id="modal-overlay">
     <div class="modal-box">
-      <!-- Close -->
       <button class="modal-close" id="close-modal" aria-label="Close">
-        <svg viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="1.5">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+             stroke="white" stroke-width="1.5">
           <line x1="1" y1="1" x2="13" y2="13"/>
-          <line x1="13" y1="1" x2="1" y2="13"/>
+          <line x1="13" y1="1" x2="1"  y2="13"/>
         </svg>
       </button>
 
-      <!-- Form -->
       <div id="form-wrap">
         <p class="modal-eyebrow">Business Inquiry</p>
-        <h2 class="modal-title">문의하기</h2>
+        <h2 class="modal-title">Get in Touch</h2>
 
-        <!--
-          Formspree 연동:
-          1. formspree.io 가입 → 새 폼 생성
-          Formspree endpoint: https://formspree.io/f/mwvzqkpa
-        -->
         <form id="contact-form" action="https://formspree.io/f/mwvzqkpa" method="POST">
-          <input type="hidden" name="_subject" value="FASIC 비즈니스 문의" />
+          <input type="hidden" name="_subject" value="FASIC Business Inquiry" />
 
           <div class="form-group">
-            <label for="f-name">이름</label>
-            <input id="f-name" type="text" name="name" required placeholder="성함을 입력해 주세요" />
+            <label for="f-name">Name</label>
+            <input id="f-name" type="text" name="name" required placeholder="Your name" />
           </div>
 
           <div class="form-group">
-            <label for="f-contact">연락처</label>
-            <input id="f-contact" type="text" name="contact" required placeholder="이메일 또는 전화번호" />
+            <label for="f-contact">Contact</label>
+            <input id="f-contact" type="text" name="contact" required
+                   placeholder="Email or phone number" />
           </div>
 
           <div class="form-group">
-            <label for="f-msg">문의 내용</label>
-            <textarea id="f-msg" name="message" required placeholder="문의 내용을 자유롭게 입력해 주세요"></textarea>
+            <label for="f-msg">Message</label>
+            <textarea id="f-msg" name="message" required
+                      placeholder="Tell us about your inquiry"></textarea>
           </div>
 
           <button type="submit" class="submit-btn" id="submit-btn">Send</button>
         </form>
 
-        <p class="privacy-note">제출하신 내용은 비공개로 처리되며<br>담당자가 직접 회신드립니다.</p>
+        <p class="privacy-note">All inquiries are handled privately.<br>
+          We'll get back to you directly.</p>
       </div>
 
-      <!-- Success state -->
       <div class="form-success" id="form-success">
         <div class="success-icon">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="1.5">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
+               stroke="rgba(255,255,255,0.7)" stroke-width="1.5">
             <polyline points="2,7 6,11 12,3"/>
           </svg>
         </div>
-        <p>문의가 접수되었습니다.<br>빠른 시일 내에 연락드리겠습니다.</p>
+        <p>Message received.<br>We'll be in touch soon.</p>
       </div>
-
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Inline scripts run immediately — no network wait -->
   <script>
     // Cursor
     const cur = document.getElementById('cursor');
@@ -415,13 +344,12 @@
       el.addEventListener('mouseleave', () => cur.classList.remove('hover'));
     });
 
-    // Modal open/close
-    const overlay   = document.getElementById('modal-overlay');
-    const openBtn   = document.getElementById('open-modal');
-    const closeBtn  = document.getElementById('close-modal');
-
-    openBtn.addEventListener('click',  () => overlay.classList.add('open'));
-    closeBtn.addEventListener('click', () => overlay.classList.remove('open'));
+    // Modal
+    const overlay  = document.getElementById('modal-overlay');
+    document.getElementById('open-modal').addEventListener('click',
+      () => overlay.classList.add('open'));
+    document.getElementById('close-modal').addEventListener('click',
+      () => overlay.classList.remove('open'));
     overlay.addEventListener('click', e => {
       if (e.target === overlay) overlay.classList.remove('open');
     });
@@ -429,50 +357,40 @@
       if (e.key === 'Escape') overlay.classList.remove('open');
     });
 
-    // Form submit (Formspree AJAX)
-    const form       = document.getElementById('contact-form');
-    const submitBtn  = document.getElementById('submit-btn');
-    const formWrap   = document.getElementById('form-wrap');
-    const successBox = document.getElementById('form-success');
-
+    // Form submit
+    const form      = document.getElementById('contact-form');
+    const submitBtn = document.getElementById('submit-btn');
     form.addEventListener('submit', async e => {
       e.preventDefault();
       submitBtn.disabled = true;
       submitBtn.textContent = 'Sending…';
-
       try {
         const res = await fetch(form.action, {
-          method: 'POST',
-          body: new FormData(form),
+          method: 'POST', body: new FormData(form),
           headers: { Accept: 'application/json' },
         });
-
         if (res.ok) {
-          formWrap.style.display = 'none';
-          successBox.style.display = 'block';
+          document.getElementById('form-wrap').style.display = 'none';
+          document.getElementById('form-success').style.display = 'block';
           form.reset();
-        } else {
-          throw new Error();
-        }
+        } else { throw new Error(); }
       } catch {
         submitBtn.disabled = false;
-        submitBtn.textContent = '다시 시도해 주세요';
+        submitBtn.textContent = 'Please try again';
       }
     });
-  </script>
 
-  <!-- Failsafe: JS 모듈 로딩 실패 시에도 8초 후 로더 강제 제거 -->
-  <script>
+    // Failsafe: force-hide loader if 3D fails to load
     setTimeout(() => {
       const l = document.getElementById('loader');
       if (l) { l.style.opacity = '0'; l.style.pointerEvents = 'none'; }
-    }, 8000);
+    }, 6000);
   </script>
 
   <script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
     }
   }
