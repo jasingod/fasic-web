@@ -162,8 +162,12 @@
       position: fixed; inset: 0; background: #050505;
       display: flex; align-items: center; justify-content: center;
       z-index: 500; transition: opacity 1s ease;
+      animation: loaderKill 0s linear 10s forwards;
     }
     #loader.hidden { opacity: 0; pointer-events: none; }
+    @keyframes loaderKill {
+      to { opacity: 0; pointer-events: none; }
+    }
     .loader-dot {
       width: 3px; height: 3px;
       background: rgba(255,255,255,0.22); border-radius: 50%;
@@ -455,6 +459,14 @@
         submitBtn.textContent = '다시 시도해 주세요';
       }
     });
+  </script>
+
+  <!-- Failsafe: JS 모듈 로딩 실패 시에도 8초 후 로더 강제 제거 -->
+  <script>
+    setTimeout(() => {
+      const l = document.getElementById('loader');
+      if (l) { l.style.opacity = '0'; l.style.pointerEvents = 'none'; }
+    }, 8000);
   </script>
 
   <script type="importmap">

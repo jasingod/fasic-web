@@ -48,9 +48,9 @@ fill.position.set(0.5, 1.5, 5);
 scene.add(fill);
 
 // Under-glow: subtle cool bounce from beneath
-scene.add(Object.assign(new THREE.PointLight(0x112244, 4, 6), {
-  position: new THREE.Vector3(0, -2.2, 0.5),
-}));
+const underGlow = new THREE.PointLight(0x112244, 4, 6);
+underGlow.position.set(0, -2.2, 0.5);
+scene.add(underGlow);
 
 // ─── Post-processing ─────────────────────────────────────────────────────────
 const composer = new EffectComposer(renderer);
