@@ -1,208 +1,227 @@
 import * as THREE from 'three';
-import { GLTFLoader }       from 'three/addons/loaders/GLTFLoader.js';
-import { EffectComposer }   from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass }       from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass }  from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
+import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 // ─── Renderer ────────────────────────────────────────────────────────────────
 const canvas = document.getElementById('webgl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 1.15;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // ─── Scene ───────────────────────────────────────────────────────────────────
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x050505);
-scene.fog = new THREE.FogExp2(0x050505, 0.10);
+scene.fog = new THREE.FogExp2(0x050505, 0.065);
 
 // ─── Camera ──────────────────────────────────────────────────────────────────
+// Closer + slightly elevated for a dramatic 3/4 product-shot angle
 const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 60);
-camera.position.set(0, 0.9, 5.5);
-camera.lookAt(0, 0, 0);
+camera.position.set(0.6, 1.4, 3.6);
+camera.lookAt(0, 0.15, 0);
 
 // ─── Lighting ────────────────────────────────────────────────────────────────
-// Near-black ambient — almost nothing
-scene.add(new THREE.AmbientLight(0x090d18, 1.2));
+// Ambient: just enough to prevent total black — keeps form readable
+scene.add(new THREE.AmbientLight(0x1a2030, 3.5));
 
-// Primary rim light: sharp, cold blue-white from rear-left
-// This is the light that "leaks" around the mouse edges
-const rimLight = new THREE.DirectionalLight(0x88aaff, 9);
-rimLight.position.set(-4.5, 2, -4);
-rimLight.castShadow = true;
-rimLight.shadow.mapSize.set(1024, 1024);
-scene.add(rimLight);
+// Primary rim: cold blue-white, from rear-left-above
+// Creates the signature light-leak edge glow as the mouse rotates
+const rim1 = new THREE.DirectionalLight(0x99bbff, 16);
+rim1.position.set(-5, 4, -3.5);
+rim1.castShadow = true;
+rim1.shadow.mapSize.set(1024, 1024);
+scene.add(rim1);
 
-// Secondary rim from rear-right — slightly warmer
-const rimLight2 = new THREE.DirectionalLight(0x6688bb, 3.5);
-rimLight2.position.set(4, 0.5, -3.5);
-scene.add(rimLight2);
+// Secondary rim: opposite side, slightly warmer
+const rim2 = new THREE.DirectionalLight(0x6688cc, 7);
+rim2.position.set(5, 2, -4);
+scene.add(rim2);
 
-// Very faint fill from front — keeps front from being total black
-const fillLight = new THREE.DirectionalLight(0x334466, 0.8);
-fillLight.position.set(1.5, -0.5, 5);
-scene.add(fillLight);
+// Front fill: reveals front face geometry without killing the drama
+const fill = new THREE.DirectionalLight(0x334466, 2.2);
+fill.position.set(0.5, 1.5, 5);
+scene.add(fill);
 
-// Subtle under-glow: cool blue bleed from beneath
-const underGlow = new THREE.PointLight(0x112244, 3, 5);
-underGlow.position.set(0, -2, 0.5);
-scene.add(underGlow);
+// Under-glow: subtle cool bounce from beneath
+scene.add(Object.assign(new THREE.PointLight(0x112244, 4, 6), {
+  position: new THREE.Vector3(0, -2.2, 0.5),
+}));
 
 // ─── Post-processing ─────────────────────────────────────────────────────────
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-
-const bloom = new UnrealBloomPass(
+composer.addPass(new UnrealBloomPass(
   new THREE.Vector2(window.innerWidth, window.innerHeight),
-  0.45,   // strength  — subtle glow on rim light highlights
-  0.75,   // radius
-  0.82    // threshold
-);
-composer.addPass(bloom);
+  0.38,  // strength
+  0.65,  // radius
+  0.80   // threshold
+));
 
 // ─── Materials ───────────────────────────────────────────────────────────────
-const mouseMat = new THREE.MeshStandardMaterial({
-  color:     0x0d0d0d,
-  metalness: 0.65,
-  roughness: 0.28,
-  envMapIntensity: 1.0,
+const bodyMat = new THREE.MeshStandardMaterial({
+  color: 0x111111, metalness: 0.55, roughness: 0.32,
 });
-
 const glossMat = new THREE.MeshStandardMaterial({
-  color:     0x080808,
-  metalness: 0.9,
-  roughness: 0.08,
-  envMapIntensity: 1.2,
+  color: 0x080808, metalness: 0.88, roughness: 0.08,
+});
+const gripMat = new THREE.MeshStandardMaterial({
+  color: 0x0d0d0d, metalness: 0.25, roughness: 0.72,
 });
 
 // ─── Mouse Group ─────────────────────────────────────────────────────────────
 const mouseGroup = new THREE.Group();
-mouseGroup.rotation.x = -0.08; // slight forward tilt
+// Start at a 3/4 angle so the first thing you see isn't a flat side
+mouseGroup.rotation.y = Math.PI * 0.18;
+mouseGroup.rotation.x = -0.06;
 scene.add(mouseGroup);
 
-let modelReady = false;
-
-// Try loading the real GLB model first
+// ─── Model loading ───────────────────────────────────────────────────────────
 const gltfLoader = new GLTFLoader();
 
 gltfLoader.load(
   '/models/mouse.glb',
   (gltf) => {
     const model = gltf.scene;
-
-    // Auto-normalize size to fit the scene
     const box = new THREE.Box3().setFromObject(model);
     const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 2.8 / maxDim;
+    const scale = 2.8 / Math.max(size.x, size.y, size.z);
     model.scale.setScalar(scale);
-
-    // Center on origin
     const center = box.getCenter(new THREE.Vector3());
     model.position.copy(center.multiplyScalar(-scale));
-
-    // Apply dark material to all meshes
-    model.traverse((child) => {
-      if (!child.isMesh) return;
-      child.castShadow = true;
-      child.receiveShadow = true;
-      child.material = child.name.toLowerCase().includes('gloss')
-        ? glossMat
-        : mouseMat;
+    model.traverse(c => {
+      if (!c.isMesh) return;
+      c.castShadow = true;
+      c.receiveShadow = true;
+      c.material = c.name.toLowerCase().includes('gloss') ? glossMat : bodyMat;
     });
-
     mouseGroup.add(model);
-    modelReady = true;
     hideLoader();
   },
   undefined,
-  () => {
-    // No GLB found — use the placeholder
-    buildPlaceholder();
-    modelReady = true;
-    hideLoader();
-  }
+  () => { buildPlaceholder(); hideLoader(); }
 );
 
-// ─── Placeholder mouse shape (used until real model is dropped in) ────────────
+// ─── Placeholder mouse geometry ──────────────────────────────────────────────
 function buildPlaceholder() {
-  // Rough mouse silhouette built from primitives
 
-  // Main body: capsule, horizontal
-  const bodyGeo = new THREE.CapsuleGeometry(0.52, 1.05, 12, 20);
-  const body = new THREE.Mesh(bodyGeo, mouseMat);
-  body.rotation.x = Math.PI / 2;
-  body.scale.set(0.88, 0.46, 1);
+  // === Main body — wide ellipsoid base ===
+  const bodyGeo = new THREE.SphereGeometry(1, 64, 32);
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.scale.set(0.78, 0.41, 1.22);
   body.castShadow = true;
   mouseGroup.add(body);
 
-  // Rear hump (higher back section)
-  const humpGeo = new THREE.SphereGeometry(0.52, 20, 14);
-  const hump = new THREE.Mesh(humpGeo, mouseMat);
-  hump.scale.set(0.78, 0.52, 0.9);
-  hump.position.set(0, 0.28, -0.28);
+  // === Top hump — the characteristic arch ===
+  const humpGeo = new THREE.SphereGeometry(0.74, 48, 24);
+  const hump = new THREE.Mesh(humpGeo, bodyMat);
+  hump.scale.set(0.64, 0.56, 0.82);
+  hump.position.set(0, 0.28, -0.20);
   hump.castShadow = true;
   mouseGroup.add(hump);
 
-  // Scroll wheel zone (glossy strip on top)
-  const wheelGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.24, 12);
+  // === Front nose — lower slope toward front ===
+  const noseGeo = new THREE.SphereGeometry(0.50, 32, 16);
+  const nose = new THREE.Mesh(noseGeo, bodyMat);
+  nose.scale.set(0.70, 0.28, 0.52);
+  nose.position.set(0, 0.06, 0.85);
+  mouseGroup.add(nose);
+
+  // === Left click button panel ===
+  const lBtnGeo = new THREE.BoxGeometry(0.37, 0.032, 0.80);
+  const lBtn = new THREE.Mesh(lBtnGeo, bodyMat);
+  lBtn.position.set(-0.175, 0.37, 0.21);
+  lBtn.rotation.x = -0.07;
+  lBtn.rotation.z =  0.04;
+  lBtn.castShadow = true;
+  mouseGroup.add(lBtn);
+
+  // === Right click button panel ===
+  const rBtn = lBtn.clone();
+  rBtn.position.set(0.175, 0.37, 0.21);
+  rBtn.rotation.z = -0.04;
+  mouseGroup.add(rBtn);
+
+  // === Center divider groove ===
+  const divGeo = new THREE.BoxGeometry(0.016, 0.036, 0.74);
+  const div = new THREE.Mesh(divGeo, glossMat);
+  div.position.set(0, 0.385, 0.21);
+  mouseGroup.add(div);
+
+  // === Scroll wheel ===
+  const wheelGeo = new THREE.CylinderGeometry(0.068, 0.068, 0.30, 24);
   const wheel = new THREE.Mesh(wheelGeo, glossMat);
-  wheel.position.set(0, 0.52, 0.25);
   wheel.rotation.x = Math.PI / 2;
+  wheel.position.set(0, 0.44, 0.30);
   wheel.castShadow = true;
   mouseGroup.add(wheel);
 
-  // Left click side button (barely visible sliver)
-  const btnGeo = new THREE.BoxGeometry(0.38, 0.04, 0.7);
-  const btnL = new THREE.Mesh(btnGeo, mouseMat);
-  btnL.position.set(-0.2, 0.5, 0.08);
-  btnL.rotation.z = 0.06;
-  mouseGroup.add(btnL);
+  // Wheel ribbing
+  for (let i = 0; i < 7; i++) {
+    const ribGeo = new THREE.TorusGeometry(0.068, 0.007, 8, 24);
+    const rib = new THREE.Mesh(ribGeo, bodyMat);
+    rib.rotation.x = Math.PI / 2;
+    rib.position.set(0, 0.44, 0.155 + i * 0.032);
+    mouseGroup.add(rib);
+  }
 
-  // Right click
-  const btnR = btnL.clone();
-  btnR.position.x = 0.2;
-  btnR.rotation.z = -0.06;
-  mouseGroup.add(btnR);
+  // === Side grip panels ===
+  const gripGeo = new THREE.BoxGeometry(0.028, 0.34, 0.72);
+  const lGrip = new THREE.Mesh(gripGeo, gripMat);
+  lGrip.position.set(-0.76, -0.01, -0.10);
+  lGrip.rotation.z = 0.14;
+  mouseGroup.add(lGrip);
+  const rGrip = lGrip.clone();
+  rGrip.position.set(0.76, -0.01, -0.10);
+  rGrip.rotation.z = -0.14;
+  mouseGroup.add(rGrip);
+
+  // === DPI button (small, between buttons and scroll wheel) ===
+  const dpiBtnGeo = new THREE.CylinderGeometry(0.055, 0.055, 0.022, 16);
+  const dpiBtn = new THREE.Mesh(dpiBtnGeo, glossMat);
+  dpiBtn.position.set(0, 0.448, 0.52);
+  mouseGroup.add(dpiBtn);
+
+  // === USB-C port stub at front ===
+  const portGeo = new THREE.BoxGeometry(0.13, 0.055, 0.032);
+  const port = new THREE.Mesh(portGeo, glossMat);
+  port.position.set(0, -0.35, 1.18);
+  mouseGroup.add(port);
 }
 
 function hideLoader() {
-  const loader = document.getElementById('loader');
-  if (!loader) return;
-  loader.classList.add('hidden');
-  setTimeout(() => loader.remove(), 1200);
+  const el = document.getElementById('loader');
+  if (!el) return;
+  el.classList.add('hidden');
+  setTimeout(() => el.remove(), 1200);
 }
 
-// ─── Camera Animation ─────────────────────────────────────────────────────────
+// ─── Animation ───────────────────────────────────────────────────────────────
 const clock = new THREE.Clock();
-
-// Camera slowly traces a shallow elliptical path — cinematic product shot feel
-const CAM_BASE_Z  = 5.5;
-const CAM_BASE_Y  = 0.9;
 
 function animate() {
   requestAnimationFrame(animate);
-
   const t = clock.getElapsedTime();
 
-  // Very slow, dreamlike camera drift
-  camera.position.x = Math.sin(t * 0.09) * 0.55;
-  camera.position.z = CAM_BASE_Z + Math.cos(t * 0.06) * 0.25;
-  camera.position.y = CAM_BASE_Y + Math.sin(t * 0.11) * 0.22;
-  camera.lookAt(0, 0.08, 0);
+  // Slow cinematic camera arc — slightly left/right + gentle vertical drift
+  camera.position.x = 0.6 + Math.sin(t * 0.07) * 0.7;
+  camera.position.z = 3.6 + Math.cos(t * 0.055) * 0.20;
+  camera.position.y = 1.4 + Math.sin(t * 0.09)  * 0.28;
+  camera.lookAt(0, 0.15, 0);
 
-  // Mouse slow self-rotation (y-axis) — full 360 over ~42 seconds
-  mouseGroup.rotation.y = t * 0.15;
+  // Mouse self-rotation — slow enough to feel like a reveal
+  mouseGroup.rotation.y = Math.PI * 0.18 + t * 0.18;
 
   // Barely perceptible float
-  mouseGroup.position.y = Math.sin(t * 0.38) * 0.045;
+  mouseGroup.position.y = Math.sin(t * 0.42) * 0.05;
 
-  // Rim light "breathing" — simulates subtle exposure shift
-  rimLight.intensity = 9 + Math.sin(t * 0.25) * 2.0;
-  rimLight2.intensity = 3.5 + Math.sin(t * 0.18 + 1.2) * 0.8;
+  // Rim light breathing — slight exposure pulse
+  rim1.intensity = 16 + Math.sin(t * 0.20) * 3.0;
+  rim2.intensity =  7 + Math.sin(t * 0.15 + 1.3) * 1.2;
 
   composer.render();
 }
