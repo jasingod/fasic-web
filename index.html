@@ -8,13 +8,6 @@
   <meta property="og:description" content="Something is coming." />
   <title>FASIC</title>
 
-  <!-- Preload Three.js ES module as early as possible -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-  <link rel="modulepreload" crossorigin
-        href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js" />
-  <link rel="modulepreload" crossorigin
-        href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js" />
-
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -23,7 +16,6 @@
       overflow: hidden;
       background: #050505;
       cursor: none;
-      /* System fonts — no Google Fonts request needed */
       font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
     }
 
@@ -40,14 +32,11 @@
       background: rgba(255,255,255,0.12);
     }
 
-    /* ── Canvas ─────────────────────────────────────────────── */
-    #webgl { position: fixed; inset: 0; z-index: 0; }
-
     /* ── Vignette ───────────────────────────────────────────── */
     .vignette {
       position: fixed; inset: 0;
-      background: radial-gradient(ellipse at 50% 58%, transparent 22%, rgba(0,0,0,0.75) 100%);
-      pointer-events: none; z-index: 2;
+      background: radial-gradient(ellipse at 50% 55%, transparent 30%, rgba(0,0,0,0.6) 100%);
+      pointer-events: none; z-index: 1;
     }
 
     /* ── Header ─────────────────────────────────────────────── */
@@ -56,7 +45,7 @@
       padding: 36px 48px;
       display: flex; align-items: center; justify-content: space-between;
       z-index: 20; pointer-events: none;
-      opacity: 0; animation: fadeIn 0.7s ease 0.9s forwards;
+      opacity: 0; animation: fadeIn 0.6s ease 0.8s forwards;
     }
     .logo-mark {
       pointer-events: all;
@@ -65,7 +54,7 @@
     }
     .logo-mark:hover { opacity: 1; }
     .logo-name {
-      font-weight: 200; font-size: 11px;
+      font-weight: 300; font-size: 11px;
       letter-spacing: 0.42em; text-indent: 0.42em;
       color: rgba(255,255,255,0.6); text-transform: uppercase;
     }
@@ -73,11 +62,10 @@
       pointer-events: all; background: none;
       border: 1px solid rgba(255,255,255,0.18);
       color: rgba(255,255,255,0.45);
-      font-weight: 200; font-size: 9px;
+      font-family: inherit; font-weight: 300; font-size: 9px;
       letter-spacing: 0.45em; text-indent: 0.45em;
       padding: 11px 22px; text-transform: uppercase;
       cursor: none; transition: border-color 0.35s, color 0.35s;
-      font-family: inherit;
     }
     .contact-btn:hover {
       border-color: rgba(255,255,255,0.48);
@@ -85,7 +73,7 @@
     }
 
     /* ── Corner accents ─────────────────────────────────────── */
-    .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 0.7s ease 1.1s forwards; }
+    .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 0.6s ease 1.0s forwards; }
     .corner-tl { top: 44px; left: 44px; }
     .corner-br { bottom: 44px; right: 44px; }
     .corner-tl::before,.corner-tl::after,
@@ -105,50 +93,35 @@
       z-index: 10; pointer-events: none;
     }
     .brand {
-      font-weight: 100;
+      font-weight: 400;
       font-size: clamp(64px, 11.5vw, 152px);
-      letter-spacing: 0.54em; text-indent: 0.54em;
-      color: rgba(255,255,255,0.92);
+      letter-spacing: 0.45em; text-indent: 0.45em;
+      color: rgba(255,255,255,0.95);
       user-select: none; opacity: 0;
-      animation: revealBrand 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.8s forwards;
+      animation: revealBrand 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
     }
     .tagline {
-      margin-top: 20px; font-weight: 200;
+      margin-top: 20px; font-weight: 300;
       font-size: clamp(9px, 1.05vw, 11px);
       letter-spacing: 0.48em; text-indent: 0.48em;
-      color: rgba(255,255,255,0.16); text-transform: uppercase;
-      opacity: 0; animation: fadeIn 0.7s ease 1.1s forwards;
+      color: rgba(255,255,255,0.2); text-transform: uppercase;
+      opacity: 0; animation: fadeIn 0.6s ease 0.7s forwards;
     }
 
     /* ── Footer ─────────────────────────────────────────────── */
     footer {
       position: fixed; bottom: 40px; left: 0; right: 0;
       text-align: center; z-index: 10;
-      opacity: 0; animation: fadeIn 0.7s ease 1.1s forwards;
+      opacity: 0; animation: fadeIn 0.6s ease 1.0s forwards;
     }
     footer a {
-      font-weight: 200; font-size: 10px;
+      font-weight: 300; font-size: 10px;
       letter-spacing: 0.36em; text-indent: 0.36em;
-      color: rgba(255,255,255,0.18); text-decoration: none;
+      color: rgba(255,255,255,0.2); text-decoration: none;
       text-transform: uppercase; cursor: none;
       transition: color 0.4s ease; font-family: inherit;
     }
     footer a:hover { color: rgba(255,255,255,0.55); }
-
-    /* ── Loader ─────────────────────────────────────────────── */
-    #loader {
-      position: fixed; inset: 0; background: #050505;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 500;
-      animation: loaderKill 0.5s ease 0.7s forwards;
-    }
-    #loader.hidden { opacity: 0; pointer-events: none; }
-    @keyframes loaderKill { to { opacity: 0; pointer-events: none; } }
-    .loader-dot {
-      width: 3px; height: 3px;
-      background: rgba(255,255,255,0.22); border-radius: 50%;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
 
     /* ── Contact Modal ───────────────────────────────────────── */
     .modal-overlay {
@@ -182,7 +155,7 @@
       color: rgba(255,255,255,0.28); text-transform: uppercase; margin-bottom: 16px;
     }
     .modal-title {
-      font-weight: 100; font-size: 28px;
+      font-weight: 200; font-size: 28px;
       letter-spacing: 0.18em; text-indent: 0.18em;
       color: rgba(255,255,255,0.88); margin-bottom: 44px;
     }
@@ -198,7 +171,7 @@
       width: 100%; background: transparent; border: none;
       border-bottom: 1px solid rgba(255,255,255,0.1);
       color: rgba(255,255,255,0.82); font-family: inherit;
-      font-weight: 200; font-size: 14px; letter-spacing: 0.04em;
+      font-weight: 300; font-size: 14px; letter-spacing: 0.04em;
       padding: 10px 0; outline: none; transition: border-color 0.3s ease;
       -webkit-appearance: none; appearance: none; border-radius: 0;
     }
@@ -211,7 +184,7 @@
     .submit-btn {
       margin-top: 8px; width: 100%; padding: 17px;
       background: rgba(255,255,255,0.88); color: #050505;
-      border: none; font-family: inherit; font-weight: 300;
+      border: none; font-family: inherit; font-weight: 400;
       font-size: 10px; letter-spacing: 0.48em; text-indent: 0.48em;
       text-transform: uppercase; cursor: none;
       transition: background 0.3s ease, transform 0.2s ease;
@@ -220,7 +193,7 @@
     .submit-btn:disabled { opacity: 0.4; }
 
     .privacy-note {
-      margin-top: 20px; font-weight: 200; font-size: 10px;
+      margin-top: 20px; font-weight: 300; font-size: 10px;
       letter-spacing: 0.06em; color: rgba(255,255,255,0.18);
       text-align: center; line-height: 1.7;
     }
@@ -233,27 +206,21 @@
       display: flex; align-items: center; justify-content: center;
     }
     .form-success p {
-      font-weight: 200; font-size: 13px;
+      font-weight: 300; font-size: 13px;
       letter-spacing: 0.08em; color: rgba(255,255,255,0.55); line-height: 1.9;
     }
 
     /* ── Keyframes ───────────────────────────────────────────── */
     @keyframes revealBrand {
-      from { opacity: 0; transform: translateY(18px); filter: blur(14px); }
+      from { opacity: 0; transform: translateY(14px); filter: blur(10px); }
       to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
     }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes pulse {
-      0%,100% { opacity: 0.15; transform: scale(0.8); }
-      50%      { opacity: 0.7;  transform: scale(1.3); }
-    }
   </style>
 </head>
 <body>
 
-  <div id="loader"><div class="loader-dot"></div></div>
   <div id="cursor"></div>
-  <canvas id="webgl"></canvas>
   <div class="vignette"></div>
   <div class="corner corner-tl"></div>
   <div class="corner corner-br"></div>
@@ -301,13 +268,11 @@
             <label for="f-name">Name</label>
             <input id="f-name" type="text" name="name" required placeholder="Your name" />
           </div>
-
           <div class="form-group">
             <label for="f-contact">Contact</label>
             <input id="f-contact" type="text" name="contact" required
                    placeholder="Email or phone number" />
           </div>
-
           <div class="form-group">
             <label for="f-msg">Message</label>
             <textarea id="f-msg" name="message" required
@@ -333,7 +298,6 @@
     </div>
   </div>
 
-  <!-- Inline scripts run immediately — no network wait -->
   <script>
     // Cursor
     const cur = document.getElementById('cursor');
@@ -347,7 +311,7 @@
     });
 
     // Modal
-    const overlay  = document.getElementById('modal-overlay');
+    const overlay = document.getElementById('modal-overlay');
     document.getElementById('open-modal').addEventListener('click',
       () => overlay.classList.add('open'));
     document.getElementById('close-modal').addEventListener('click',
@@ -381,23 +345,6 @@
         submitBtn.textContent = 'Please try again';
       }
     });
-
-    // Failsafe: force-hide loader (CSS animation handles it at 0.7s, this is backup)
-    setTimeout(() => {
-      const l = document.getElementById('loader');
-      if (l) { l.style.opacity = '0'; l.style.pointerEvents = 'none'; }
-    }, 1500);
   </script>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-    }
-  }
-  </script>
-
-  <script type="module" src="js/scene.js"></script>
 </body>
 </html>
