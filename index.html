@@ -8,6 +8,11 @@
   <meta property="og:description" content="Something is coming." />
   <title>FASIC</title>
 
+  <!-- Inter — SIL Open Font License, free for commercial use -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400&display=swap" rel="stylesheet" />
+
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -16,7 +21,7 @@
       overflow: hidden;
       background: #050505;
       cursor: none;
-      font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
     /* ── Cursor ─────────────────────────────────────────────── */
@@ -93,9 +98,9 @@
       z-index: 10; pointer-events: none;
     }
     .brand {
-      font-weight: 400;
+      font-weight: 100;
       font-size: clamp(64px, 11.5vw, 152px);
-      letter-spacing: 0.45em; text-indent: 0.45em;
+      letter-spacing: 0.54em; text-indent: 0.54em;
       color: rgba(255,255,255,0.95);
       user-select: none; opacity: 0;
       animation: revealBrand 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
