@@ -80,14 +80,14 @@
 
     /* ── Corner accents ─────────────────────────────────────── */
     .corner { position: fixed; z-index: 10; opacity: 0; animation: fadeIn 0.6s ease 1.0s forwards; }
-    .corner-tl { top: 44px; left: 44px; }
+    .corner-bl { bottom: 44px; left: 44px; }
     .corner-br { bottom: 44px; right: 44px; }
-    .corner-tl::before,.corner-tl::after,
+    .corner-bl::before,.corner-bl::after,
     .corner-br::before,.corner-br::after {
       content: ''; position: absolute; background: rgba(255,255,255,0.13);
     }
-    .corner-tl::before { width: 28px; height: 1px; top: 0; left: 0; }
-    .corner-tl::after  { width: 1px; height: 28px; top: -14px; left: 0; }
+    .corner-bl::before { width: 28px; height: 1px; bottom: 0; left: 0; }
+    .corner-bl::after  { width: 1px; height: 28px; bottom: -14px; left: 0; }
     .corner-br::before { width: 28px; height: 1px; bottom: 0; right: 0; }
     .corner-br::after  { width: 1px; height: 28px; bottom: -14px; right: 0; }
 
@@ -251,7 +251,7 @@
   <div id="cursor"></div>
   <canvas id="webgl"></canvas>
   <div class="vignette"></div>
-  <div class="corner corner-tl"></div>
+  <div class="corner corner-bl"></div>
   <div class="corner corner-br"></div>
 
   <header>
