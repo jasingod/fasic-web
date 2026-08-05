@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader }      from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader }     from 'three/addons/loaders/DRACOLoader.js';
 import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -73,8 +74,14 @@ const darkMat = new THREE.MeshStandardMaterial({
 const mouseGroup = new THREE.Group();
 scene.add(mouseGroup);
 
-// ─── Load GLB ────────────────────────────────────────────────────────────────
-new GLTFLoader().load(
+// ─── Load GLB (Draco-compressed) ──────────────────────────────────────────────
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
+
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
+
+gltfLoader.load(
   '/models/mouse.glb',
   (gltf) => {
     const model = gltf.scene;
