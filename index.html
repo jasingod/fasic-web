@@ -107,7 +107,8 @@
       animation: revealBrand 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
     }
     .tagline {
-      margin-top: clamp(80px, 14vh, 150px); font-weight: 300;
+      position: absolute; left: 0; right: 0; text-align: center;
+      top: calc(50% + clamp(100px, 21vh, 220px)); font-weight: 300;
       font-size: clamp(9px, 1.05vw, 11px);
       letter-spacing: 0.48em; text-indent: 0.48em;
       color: rgba(255,255,255,0.2); text-transform: uppercase;
