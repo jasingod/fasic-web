@@ -82,7 +82,7 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
 gltfLoader.load(
-  '/models/mouse.141d58bd6c.glb',
+  '/models/mouse.b3dbe3a8a2.glb',
   (gltf) => {
     const model = gltf.scene;
 
