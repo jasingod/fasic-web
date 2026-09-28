@@ -107,7 +107,7 @@
       animation: revealBrand 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
     }
     .tagline {
-      margin-top: 20px; font-weight: 300;
+      margin-top: clamp(110px, 20vh, 200px); font-weight: 300;
       font-size: clamp(9px, 1.05vw, 11px);
       letter-spacing: 0.48em; text-indent: 0.48em;
       color: rgba(255,255,255,0.2); text-transform: uppercase;
@@ -199,7 +199,7 @@
     .submit-btn:disabled { opacity: 0.4; }
 
     .privacy-note {
-      margin-top: 20px; font-weight: 300; font-size: 10px;
+      margin-top: clamp(110px, 20vh, 200px); font-weight: 300; font-size: 10px;
       letter-spacing: 0.06em; color: rgba(255,255,255,0.18);
       text-align: center; line-height: 1.7;
     }
